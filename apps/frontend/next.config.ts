@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -40,6 +41,17 @@ const nextConfig: NextConfig = {
 
     // Modify the file loader rule to ignore *.svg, since we have it handled now.
     fileLoaderRule.exclude = /\.svg$/i;
+
+    // Ensure workspace packages resolve from source during builds
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@repo/types": path.resolve(__dirname, "../../packages/types/src"),
+      "@repo/db": path.resolve(__dirname, "../../packages/db/src/client"),
+      "@repo/command-security": path.resolve(
+        __dirname,
+        "../../packages/command-security/src"
+      ),
+    };
 
     return config;
   },
