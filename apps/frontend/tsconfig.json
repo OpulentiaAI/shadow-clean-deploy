@@ -9,6 +9,18 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@repo/types": [
+        "../../packages/types/src"
+      ],
+      "@repo/types/*": [
+        "../../packages/types/src/*"
+      ],
+      "@repo/db": [
+        "../../packages/db/src/client"
+      ],
+      "@repo/db/*": [
+        "../../packages/db/src/*"
       ]
     }
   },
