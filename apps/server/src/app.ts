@@ -1,5 +1,5 @@
 import { router as IndexingRouter } from "@/indexing/index";
-import { prisma } from "@repo/db";
+import { prisma, TaskStatus } from "@repo/db";
 import { AvailableModels, ModelType } from "@repo/types";
 import cors from "cors";
 import express from "express";
@@ -166,7 +166,7 @@ app.post("/api/tasks/:taskId/initiate", async (req, res) => {
           `[TASK_INITIATE] No GitHub access token found for user ${userId}`
         );
 
-        await updateTaskStatus(taskId, "FAILED", "INIT");
+        await updateTaskStatus(taskId, TaskStatus.FAILED, "INIT");
 
         return res.status(400).json({
           error: "GitHub access token required",
@@ -189,7 +189,7 @@ app.post("/api/tasks/:taskId/initiate", async (req, res) => {
               ? "OpenRouter"
               : "OpenAI";
 
-        await updateTaskStatus(taskId, "FAILED", "INIT");
+        await updateTaskStatus(taskId, TaskStatus.FAILED, "INIT");
 
         return res.status(400).json({
           error: `${providerName} API key required`,
@@ -197,7 +197,7 @@ app.post("/api/tasks/:taskId/initiate", async (req, res) => {
         });
       }
 
-      await updateTaskStatus(taskId, "INITIALIZING", "INIT");
+      await updateTaskStatus(taskId, TaskStatus.INITIALIZING, "INIT");
       console.log(
         `⏳ [TASK_INITIATE] Task ${taskId} status set to INITIALIZING - starting initialization...`
       );
@@ -215,7 +215,7 @@ app.post("/api/tasks/:taskId/initiate", async (req, res) => {
         select: { workspacePath: true },
       });
 
-      await updateTaskStatus(taskId, "RUNNING", "INIT");
+      await updateTaskStatus(taskId, TaskStatus.RUNNING, "INIT");
 
       await chatService.processUserMessage({
         taskId,
@@ -239,7 +239,7 @@ app.post("/api/tasks/:taskId/initiate", async (req, res) => {
         `❌ [TASK_INITIATE] Task ${taskId} initialization failed - setting status to FAILED`
       );
 
-      await updateTaskStatus(taskId, "FAILED", "INIT");
+      await updateTaskStatus(taskId, TaskStatus.FAILED, "INIT");
 
       if (
         initError instanceof Error &&
