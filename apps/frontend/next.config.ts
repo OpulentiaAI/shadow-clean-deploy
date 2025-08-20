@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -12,6 +13,9 @@ const nextConfig: NextConfig = {
         hostname: "avatars.githubusercontent.com",
       },
     ],
+  },
+  experimental: {
+    externalDir: true,
   },
   webpack: (config, { isServer }) => {
     // Grab the existing rule that handles SVG imports
@@ -40,6 +44,13 @@ const nextConfig: NextConfig = {
 
     // Modify the file loader rule to ignore *.svg, since we have it handled now.
     fileLoaderRule.exclude = /\.svg$/i;
+
+    // Resolve monorepo workspace packages without relying on node_modules linking
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@repo/db": path.resolve(__dirname, "../../packages/db/src"),
+      "@repo/types": path.resolve(__dirname, "../../packages/types/src"),
+    };
 
     return config;
   },
