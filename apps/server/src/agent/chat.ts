@@ -1,4 +1,4 @@
-import { prisma } from "@repo/db";
+import { prisma, TaskStatus } from "@repo/db";
 import {
   AssistantMessagePart,
   ErrorPart,
@@ -163,39 +163,16 @@ export class ChatService {
     sequence?: number,
     metadata?: MessageMetadata
   ): Promise<ChatMessage> {
-    // If no sequence provided, generate atomically
-    if (sequence === undefined) {
-      const usage = metadata?.usage;
-      return await this.createMessageWithAtomicSequence(taskId, {
-        content,
-        role: "ASSISTANT",
-        llmModel,
-        metadata,
-        promptTokens: usage?.promptTokens,
-        completionTokens: usage?.completionTokens,
-        totalTokens: usage?.totalTokens,
-        finishReason: metadata?.finishReason,
-      });
-    }
-
-    // Extract usage info for denormalized storage
     const usage = metadata?.usage;
-
-    return await prisma.chatMessage.create({
-      data: {
-        taskId,
-        content,
-        role: "ASSISTANT",
-        llmModel,
-        sequence,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        metadata: (metadata as any) || undefined,
-        // Denormalized usage fields for easier querying
-        promptTokens: usage?.promptTokens,
-        completionTokens: usage?.completionTokens,
-        totalTokens: usage?.totalTokens,
-        finishReason: metadata?.finishReason,
-      },
+    return await this.createMessageWithAtomicSequence(taskId, {
+      content,
+      role: "ASSISTANT",
+      llmModel,
+      metadata,
+      promptTokens: usage?.promptTokens,
+      completionTokens: usage?.completionTokens,
+      totalTokens: usage?.totalTokens,
+      finishReason: metadata?.finishReason,
     });
   }
 
@@ -206,26 +183,11 @@ export class ChatService {
     sequence?: number,
     metadata?: MessageMetadata
   ): Promise<ChatMessage> {
-    // If no sequence provided, generate atomically
-    if (sequence === undefined) {
-      return await this.createMessageWithAtomicSequence(taskId, {
-        content,
-        role: "SYSTEM",
-        llmModel,
-        metadata,
-      });
-    }
-
-    return await prisma.chatMessage.create({
-      data: {
-        taskId,
-        content,
-        role: "SYSTEM",
-        llmModel,
-        sequence,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        metadata: (metadata as any) || undefined,
-      },
+    return await this.createMessageWithAtomicSequence(taskId, {
+      content,
+      role: "SYSTEM",
+      llmModel,
+      metadata,
     });
   }
 
@@ -428,7 +390,7 @@ export class ChatService {
           baseBranch: task.baseBranch,
           userId: task.userId,
           taskTitle: task.title,
-          wasTaskCompleted: task.status === "COMPLETED",
+          wasTaskCompleted: task.status === TaskStatus.COMPLETED,
           messageId,
         },
         context
@@ -575,7 +537,7 @@ export class ChatService {
         );
 
         // Set task to INITIALIZING to indicate re-initialization is happening
-        await updateTaskStatus(taskId, "INITIALIZING", "CHAT");
+        await updateTaskStatus(taskId, TaskStatus.INITIALIZING, "CHAT");
 
         const initializationEngine = new TaskInitializationEngine();
         const initSteps = await initializationEngine.getDefaultStepsForTask();
@@ -586,7 +548,7 @@ export class ChatService {
           context
         );
 
-        await updateTaskStatus(taskId, "RUNNING", "CHAT");
+        await updateTaskStatus(taskId, TaskStatus.RUNNING, "CHAT");
       }
 
       // ARCHIVED is permanent - no follow-up handling
@@ -599,7 +561,7 @@ export class ChatService {
       // Set task to failed state on initialization error
       await updateTaskStatus(
         taskId,
-        "FAILED",
+        TaskStatus.FAILED,
         "CHAT",
         error instanceof Error ? error.message : "Re-initialization failed"
       );
@@ -1118,7 +1080,7 @@ These are specific instructions from the user that should be followed throughout
           }
 
           // Update task status to failed
-          await updateTaskStatus(taskId, "FAILED", "CHAT", userFriendlyError);
+          await updateTaskStatus(taskId, TaskStatus.FAILED, "CHAT", userFriendlyError);
 
           // Clean up stream tracking
           this.activeStreams.delete(taskId);
@@ -1205,10 +1167,10 @@ These are specific instructions from the user that should be followed throughout
         // Error already handled above, just ensure cleanup happens
         await scheduleTaskCleanup(taskId, 15);
       } else if (wasStoppedEarly) {
-        await updateTaskStatus(taskId, "STOPPED", "CHAT");
+        await updateTaskStatus(taskId, TaskStatus.STOPPED, "CHAT");
         await scheduleTaskCleanup(taskId, 15);
       } else {
-        await updateTaskStatus(taskId, "COMPLETED", "CHAT");
+        await updateTaskStatus(taskId, TaskStatus.COMPLETED, "CHAT");
         await scheduleTaskCleanup(taskId, 15);
 
         // Update task activity timestamp when assistant completes response
@@ -1272,7 +1234,7 @@ These are specific instructions from the user that should be followed throughout
         error instanceof Error ? error.message : "Unknown error occurred";
 
       // Update task status to failed when stream processing fails
-      await updateTaskStatus(taskId, "FAILED", "CHAT", errorMessage);
+      await updateTaskStatus(taskId, TaskStatus.FAILED, "CHAT", errorMessage);
 
       // Emit error chunk
       emitStreamChunk(
@@ -1425,7 +1387,7 @@ These are specific instructions from the user that should be followed throughout
 
     // Update task status to stopped only when explicitly requested (e.g., manual stop)
     if (updateStatus) {
-      await updateTaskStatus(taskId, "STOPPED", "CHAT");
+      await updateTaskStatus(taskId, TaskStatus.STOPPED, "CHAT");
     }
   }
 
@@ -1637,7 +1599,7 @@ These are specific instructions from the user that should be followed throughout
           baseBranch: parentTask.shadowBranch, // Use parent's shadow branch as base
           shadowBranch,
           baseCommitSha: "pending",
-          status: "INITIALIZING",
+          status: TaskStatus.INITIALIZING,
           user: {
             connect: {
               id: userId,
@@ -1655,15 +1617,12 @@ These are specific instructions from the user that should be followed throughout
       });
 
       // Create a message in the parent task referencing the stacked task
-      const parentNextSequence = await this.getNextSequence(parentTaskId);
-      await prisma.chatMessage.create({
-        data: {
-          content: message,
-          role: MessageRole.USER,
-          llmModel: model,
-          taskId: parentTaskId,
+      await this.createMessageWithAtomicSequence(parentTaskId, {
+        content: message,
+        role: MessageRole.USER,
+        llmModel: model,
+        metadata: {
           stackedTaskId: taskId,
-          sequence: parentNextSequence,
         },
       });
 
@@ -1705,7 +1664,7 @@ These are specific instructions from the user that should be followed throughout
     try {
       const initializationEngine = new TaskInitializationEngine();
 
-      await updateTaskStatus(taskId, "RUNNING", "CHAT");
+      await updateTaskStatus(taskId, TaskStatus.RUNNING, "CHAT");
 
       // Get parent's API keys from cached context
       const parentContext =

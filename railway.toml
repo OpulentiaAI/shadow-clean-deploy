@@ -3,7 +3,7 @@ builder = "dockerfile"
 buildCommand = ""
 
 [deploy]
-startCommand = "node apps/server/dist/server.js"
+startCommand = "npm run start:production"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 
@@ -14,3 +14,10 @@ root = "/"
   [services.env]
   NODE_ENV = "production"
   AGENT_MODE = "local"
+  DATABASE_URL = "postgres://postgres:@127.0.0.1:5432/shadow_dev"
+  PINECONE_API_KEY = "YOUR_PINECONE_API_KEY"
+  PINECONE_INDEX_NAME = "shadow"
+  GITHUB_CLIENT_ID = "YOUR_GITHUB_CLIENT_ID"
+  GITHUB_CLIENT_SECRET = "YOUR_GITHUB_CLIENT_SECRET"
+  GITHUB_PERSONAL_TOKEN = "YOUR_GITHUB_PERSONAL_TOKEN"
+  WORKSPACE_DIR = "/app/workspace"
