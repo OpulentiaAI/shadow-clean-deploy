@@ -9,6 +9,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@repo/types": [
+        "../../packages/types/src"
       ]
     }
   },
@@ -20,5 +23,10 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../packages/types"
+    }
   ]
 }
