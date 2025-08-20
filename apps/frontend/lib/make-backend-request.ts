@@ -21,15 +21,14 @@ export async function makeBackendRequest(
     ...(options.headers as Record<string, string>),
   };
 
-  if (process.env.VERCEL_ENV === "production") {
-    const apiKey = process.env.SHADOW_API_KEY;
-    if (apiKey) {
-      headers["Authorization"] = `Bearer ${apiKey}`;
-    } else {
-      console.warn(
-        "[makeBackendRequest] SHADOW_API_KEY not found - required in production environment"
-      );
-    }
+  // Always include API key if present to support protected backends in any env
+  const apiKey = process.env.SHADOW_API_KEY;
+  if (apiKey) {
+    headers["Authorization"] = `Bearer ${apiKey}`;
+  } else if (process.env.VERCEL_ENV === "production") {
+    console.warn(
+      "[makeBackendRequest] SHADOW_API_KEY not found - required in production environment"
+    );
   }
 
   return fetch(fullUrl, {
