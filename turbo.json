@@ -91,7 +91,7 @@
       "cache": false
     },
     "generate": {
-      "dependsOn": ["^generate"],
+      "dependsOn": ["^generate", "^build"],
       "cache": false,
       "env": ["DATABASE_URL", "DIRECT_URL"]
     }
