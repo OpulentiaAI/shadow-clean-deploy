@@ -10,18 +10,10 @@
       "@/*": [
         "./*"
       ],
-      "@repo/types": [
-        "../../packages/types/src"
-      ],
-      "@repo/types/*": [
-        "../../packages/types/src/*"
-      ],
-      "@repo/db": [
-        "../../packages/db/src"
-      ],
-      "@repo/db/*": [
-        "../../packages/db/src/*"
-      ]
+      "@repo/types": ["../../packages/types/src/index"],
+      "@repo/types/*": ["../../packages/types/src/*"],
+      "@repo/db": ["../../packages/db/src/client"],
+      "@repo/db/*": ["../../packages/db/src/*"]
     }
   },
   "include": [

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   devIndicators: {
     position: "bottom-right",
   },
+  transpilePackages: ["@repo/db", "@repo/types"],
   images: {
     remotePatterns: [
       {
@@ -48,8 +49,8 @@ const nextConfig: NextConfig = {
     // Resolve monorepo workspace packages without relying on node_modules linking
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      "@repo/db": path.resolve(__dirname, "../../packages/db/src"),
-      "@repo/types": path.resolve(__dirname, "../../packages/types/src"),
+      "@repo/db": path.resolve(__dirname, "../../packages/db/src/client.ts"),
+      "@repo/types": path.resolve(__dirname, "../../packages/types/src/index.ts"),
     };
 
     return config;
