@@ -2,9 +2,17 @@ import { prisma } from "@repo/db";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
-const baseURL = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
+const appUrlFromEnv =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : undefined);
+
+const baseURL = appUrlFromEnv || "http://localhost:3000";
+const trustedOrigins =
+  process.env.NEXT_PUBLIC_TRUSTED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean) || [baseURL, "http://localhost:3000"];
 
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
   database: prismaAdapter(prisma, {
@@ -17,7 +25,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET as string,
-  trustedOrigins: [baseURL],
+  trustedOrigins,
   callbacks: {
     redirect: {
       signInRedirect: "/",
