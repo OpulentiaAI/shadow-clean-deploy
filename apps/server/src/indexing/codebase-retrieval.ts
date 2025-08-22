@@ -9,7 +9,7 @@ export async function retrieveCodeChunks(
   request: CodebaseSearchRequest
 ): Promise<CodebaseSearchResponse[]> {
   try {
-    const pinecone = new PineconeHandler("shadow");
+    const pinecone = new PineconeHandler();
     return await pinecone.searchRecords(request);
   } catch (error) {
     console.error(`[CODEBASE_RETRIEVAL] Error retrieving code chunks: ${error}`);

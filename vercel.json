@@ -2,6 +2,6 @@
   "version": 2,
   "framework": "nextjs",
   "installCommand": "npm ci",
-  "buildCommand": "npx turbo run build --filter=@repo/db && cd apps/frontend && npm run build",
+  "buildCommand": "npx turbo run build --filter=@repo/command-security --filter=@repo/types --filter=@repo/db && cd apps/frontend && npm run build",
   "outputDirectory": "apps/frontend/.next"
 }
