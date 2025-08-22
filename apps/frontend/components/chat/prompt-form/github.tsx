@@ -239,7 +239,7 @@ export function GithubConnection({
           width={16}
           height={16}
         />
-        <div className="font-medium">Connect Github</div>
+        <div className="font-medium">Connect GitHub</div>
       </div>
       {statusError ? (
         <div className="text-destructive mb-4 text-sm">
@@ -248,7 +248,7 @@ export function GithubConnection({
       ) : (
         <div className="text-muted-foreground mb-4 text-sm">
           For full access, install Opulent OS into your organization. If you&apos;re
-          seeing this and already installed, hit &apos;Save&apos; in Github.
+          seeing this and already installed, hit &apos;Save&apos; in GitHub.
         </div>
       )}
 
@@ -467,7 +467,7 @@ function ManageGithubButton({ link }: { link: string }) {
         className="hover:bg-sidebar-accent flex size-full cursor-pointer items-center gap-2 border-t px-2.5 text-sm transition-colors"
       >
         <GithubLogo className="size-4" />
-        <span>Manage Github</span>
+        <span>Manage GitHub</span>
       </Link>
     </div>
   );

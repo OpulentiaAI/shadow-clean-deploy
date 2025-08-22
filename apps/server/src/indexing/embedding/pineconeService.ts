@@ -22,7 +22,9 @@ class PineconeHandler {
     this.pc = new Pinecone({ apiKey: config.pineconeApiKey || "" }); // If no api_key, we can early return
     this.isDisabled = !config.pineconeApiKey; // If no api_key then we can early return
     this.indexName = indexName; // Constant
-    this.client = this.pc.Index(this.indexName); // Client attached to the index
+    this.client = config.pineconeHost
+      ? this.pc.index(this.indexName, config.pineconeHost)
+      : this.pc.index(this.indexName); // Client attached to the index
     this.embeddingModel = config.embeddingModel; // Constant
   }
 

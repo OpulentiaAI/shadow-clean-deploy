@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
-    "build": "cd ../.. && npm run generate && npm run build -w @repo/db && cd apps/frontend && next build",
+    "build": "cd ../.. && npm run generate && npm run build -w @repo/command-security && npm run build -w @repo/types && npm run build -w @repo/db && cd apps/frontend && next build",
     "start": "next start",
     "lint": "next lint",
     "check-types": "tsc --noEmit",
