@@ -85,7 +85,7 @@ export function GitHubSettings() {
         </div>
         <div className="text-muted-foreground">
           For full access, install Opulent OS into your organization. If you&apos;re
-          seeing this and already installed, hit &apos;Save&apos; in Github.
+          seeing this and already installed, hit &apos;Save&apos; in GitHub.
         </div>
       </div>
       {githubStatus?.installationUrl && (
@@ -96,7 +96,7 @@ export function GitHubSettings() {
               target="_blank"
               className="font-normal"
             >
-              Install Github App <ArrowUpRight />
+              Install GitHub App <ArrowUpRight />
             </Link>
           </Button>
           <Button
